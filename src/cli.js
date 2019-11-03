@@ -1,4 +1,5 @@
 import arg from 'arg';
+const chalk = require('chalk');
 import inquirer from 'inquirer';
 
 const fs = require('fs');
@@ -24,7 +25,8 @@ function parseArgumentsIntoOptions(rawArgs) {
 		clear: args['--clear'] || false,
 		addItem: args['--add'] || false,
 		newList: args['--new'] || false,
-		deleteList: args['--delete'] || false
+		deleteList: args['--delete'] || false,
+		noOptions: !(args['--clear'] || args['--add'] || args['--new'] || args['--delete'])
 	};
 }
 
@@ -34,9 +36,16 @@ async function promptForMissingOptions(options, lists) {
 
 	if(options.clear) {
 		questions.push({
+			type: 'checkbox',
+			name: 'listsToClear',
+			message: 'Select the lists you want to clear:',
+			choices: lists
+		});
+
+		questions.push({
 			type: 'confirm',
-			name: 'clear',
-			message: 'Are you sure you want to clear all lists?',
+			name: 'clearLists',
+			message: 'Are you sure you want to clear these lists?',
 			default: false
 		});
 	}
@@ -99,16 +108,57 @@ async function promptForMissingOptions(options, lists) {
 
 function handleAnswers(answers, data) {
 	let successes = {};
-	if(answers.clear) {
-
+	if(answers.clearLists) {
+		successes.clear = true;
 	}
 
 	if(answers.addItem) {
 		data[answers.listForNewItem].items.push(answers.newItem);
+		successes.addItem = true;
+	}
 
+	if(answers.newList) {
+		data[answers.newListName] = {"items": []};
+		successes.newList = true;
 	}
 
 	return successes;
+}
+
+function showSuccesses(successes, options) {
+	if(options.clear) {
+		if(successes.clear) {
+			console.log("Lists have been " + chalk.green("successfully") + " cleared!");
+		} else {
+			console.log(chalk.red("Failed") + " to clear lists.");
+		}
+	}
+
+	if(options.addItem) {
+		if(successes.addItem){
+			console.log("Item \"" + options.newItem + "\" has been " + 
+				chalk.green("successfully") + " added to list \"" + options.listForNewItem + "\"!" );
+		} else {
+			console.log(chalk.red("Failed") + " to add item \"" + options.newItem + "\" to list \"" + options.listForNewItem + "\".");
+		}
+	}
+
+	if(options.newList) {
+		if(successes.newList) {
+			console.log("New list \"" + options.newListName + "\" has been " + chalk.green("successfully") + " created!");
+		} else {
+			console.log(chalk.red("Failed") + "to create new list \"" + options.newListName + "\".");
+		}
+	}
+}
+
+function showTasks(data, keys) {
+	for(var i = 0; i < keys.length; i++) {
+		console.log(chalk.blue(keys[i]));
+		for(var j = 0; j < data[keys[i]].items.length; j++) {
+			console.log("	" + data[keys[i]].items[j]);
+		}
+	}
 }
 
 export async function cli(args){
@@ -136,10 +186,15 @@ export async function cli(args){
     	}
 	}
 
-    options = await promptForMissingOptions(options, listNames);
-    console.log(options);
+	if(options.noOptions) {
+		showTasks(data, listNames);
+	} else {
+		options = await promptForMissingOptions(options, listNames);
+	    console.log(options);
 
-    let successes = handleAnswers(options, data);
+	    let successes = handleAnswers(options, data);
+	    showSuccesses(successes, options);
+	}
 
     fs.writeFileSync('./public/lists.json', JSON.stringify(data)); // Replace file with newest data
 }
