@@ -1,6 +1,7 @@
 import arg from 'arg';
 const chalk = require('chalk');
 import inquirer from 'inquirer';
+import path from 'path';
 
 const fs = require('fs');
 
@@ -158,10 +159,16 @@ function showSuccesses(successes, options) {
 }
 
 function showTasks(data, keys) {
-	for(var i = 0; i < keys.length; i++) {
-		console.log(chalk.blue(keys[i]));
-		for(var j = 0; j < data[keys[i]].items.length; j++) {
-			console.log("	" + data[keys[i]].items[j]);
+	if(keys.length == 1 && data[keys[0]].items.length == 0){ // No tasks in any lists
+		console.log("You have no tasks! Add some now with terms-todo --add, or create a new list with terms-todo --new");
+	} else {
+		for(var i = 0; i < keys.length; i++) {
+
+			console.log(chalk.blue(keys[i])); // Name of the list
+
+			for(var j = 0; j < data[keys[i]].items.length; j++) {
+				console.log("	" + data[keys[i]].items[j]); // Each item
+			}
 		}
 	}
 }
@@ -172,9 +179,12 @@ export async function cli(args){
     let listNames = [] // Holds all of the users list names
     let data = {}; // Hold the data from the file
 
-    if(fs.existsSync('./public/lists.json')){ // Check if the file exists
+    const currentFileUrl = import.meta.url;
+   	const listsFile = path.resolve(new URL(currentFileUrl).pathname, '../../public/lists.json'); // Definitive path, for when its run outside of the directory
 
-    	data = fs.readFileSync('./public/lists.json'); // Read the lists from the file
+    if(fs.existsSync(listsFile)){ // Check if the file exists
+
+    	data = fs.readFileSync(listsFile); // Read the lists from the file
 
     	data = JSON.parse(data); // Parse from bytecode to JSON
 
@@ -195,12 +205,11 @@ export async function cli(args){
 		showTasks(data, listNames);
 	} else {
 		options = await promptForMissingOptions(options, listNames);
-	    console.log(options);
 
 	    let successes = handleAnswers(options, data);
 	    showSuccesses(successes, options);
 	}
 
-    fs.writeFileSync('./public/lists.json', JSON.stringify(data)); // Replace file with newest data
+    fs.writeFileSync(listsFile, JSON.stringify(data)); // Replace file with newest data
 }
 

@@ -1,6 +1,6 @@
 {
-  "name": "@cameron-justice/Terms-ToDo",
-  "version": "1.0.0",
+  "name": "terms-todo",
+  "version": "1.0.2",
   "description": "A terminal-based To-Do list",
   "main": "src/index.js",
   "bin": {
