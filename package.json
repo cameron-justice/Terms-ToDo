@@ -1,0 +1,28 @@
+{
+  "name": "@cameron-justice/Terms-ToDo",
+  "version": "1.0.0",
+  "description": "A terminal-based To-Do list",
+  "main": "src/index.js",
+  "bin": {
+    "@cameron-justice/terms-todo": "bin/terms-todo",
+    "terms-todo": "bin/terms-todo"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "cli",
+    "terms-todo",
+    "to-do list"
+  ],
+  "author": "cameron-justice",
+  "license": "MIT",
+  "dependencies": {
+    "arg": "^4.1.1",
+    "esm": "^3.2.25",
+    "inquirer": "^7.0.0"
+  }
+}
