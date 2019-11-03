@@ -98,7 +98,8 @@ async function promptForMissingOptions(options, lists) {
 	const answers = await inquirer.prompt(questions);
 	return {
 		...options,
-		clear: answers.clear,
+		clearLists: answers.clearLists,
+		listsToClear: answers.listsToClear,
 		newItem: answers.newItem,
 		listForNewItem: answers.listForNewItem,
 		newListName: answers.newListName,
@@ -108,7 +109,11 @@ async function promptForMissingOptions(options, lists) {
 
 function handleAnswers(answers, data) {
 	let successes = {};
-	if(answers.clearLists) {
+	if(answers.clear) {
+		for(var i = 0; i < answers.listsToClear.length; i++) {
+			data[answers.listsToClear[i]].items = [];
+		}
+
 		successes.clear = true;
 	}
 
