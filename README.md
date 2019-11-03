@@ -10,6 +10,7 @@ Options:
 	-n, --new: Create a new tasklist
 	-c, --clear: Clear selected tasklists
 	-d, --delete: Delete selected tasklist
+	-r, --remove: Remove tasks from selected tasklist
 
 ## Future Plans
 I would like to migrate from the 'arg' package to the 'args' package (Confusing, right?) for managing command-line options and commands. 'arg' is too strict and doesn't allow for auto-documentation, whereas 'args' allows for better command-line interpretation and auto-documentation.

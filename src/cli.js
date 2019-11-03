@@ -12,10 +12,12 @@ function parseArgumentsIntoOptions(rawArgs) {
 			'--add': Boolean,
 			'--new': Boolean,
 			'--delete': Boolean,
+			'--remove': Boolean,
 			'-c': '--clear',
 			'-a': '--add',
 			'-n': '--new',
-			'-d': '--delete'
+			'-d': '--delete',
+			'-r': '--remove'
 		},
 		{
 			argv: rawArgs.slice(2),
@@ -27,11 +29,12 @@ function parseArgumentsIntoOptions(rawArgs) {
 		addItem: args['--add'] || false,
 		newList: args['--new'] || false,
 		deleteList: args['--delete'] || false,
-		noOptions: !(args['--clear'] || args['--add'] || args['--new'] || args['--delete'])
+		removeItem: args['--remove'] || false,
+		noOptions: !(args['--clear'] || args['--add'] || args['--new'] || args['--delete'] || args['--remove'])
 	};
 }
 
-async function promptForMissingOptions(options, lists) {
+async function promptForMissingOptions(options, lists, data) {
 	
 	const questions = [];
 
@@ -69,6 +72,33 @@ async function promptForMissingOptions(options, lists) {
 		});
 	}
 
+	if(options.removeItem) {
+		let subQs = [];
+		subQs.push({
+			type: 'list',
+			name: 'listToRemoveFrom',
+			message: 'Pick a list to remove an item from',
+			choices: lists
+		});
+
+		let subAs = await inquirer.prompt(subQs);
+
+		options.listToRemoveFrom = subAs.listToRemoveFrom;
+
+		questions.push({
+			type: 'checkbox',
+			name: 'itemsToRemove',
+			message: 'Which items do you wnat to remove?',
+			choices: data[subAs.listToRemoveFrom].items
+		});
+
+		questions.push({
+			type: 'confirm',
+			name: 'confirmRemoveItems',
+			message: 'Are you sure you want to remove these?',
+		})
+	}
+
 	// If user wants a new list
 	if(options.newList) {
 		questions.push({
@@ -104,7 +134,8 @@ async function promptForMissingOptions(options, lists) {
 		newItem: answers.newItem,
 		listForNewItem: answers.listForNewItem,
 		newListName: answers.newListName,
-		listsToDelete: answers.listsToDelete
+		listsToDelete: answers.listsToDelete,
+		itemsToRemove: answers.itemsToRemove
 	};
 }
 
@@ -126,6 +157,15 @@ function handleAnswers(answers, data) {
 	if(answers.newList) {
 		data[answers.newListName] = {"items": []};
 		successes.newList = true;
+	}
+
+	if(answers.removeItem) {
+		for(var i = 0; i < answers.itemsToRemove.length; i++) {
+			let index = data[answers.listToRemoveFrom].items.indexOf(answers.itemsToRemove[i]);
+			data[answers.listToRemoveFrom].items.splice(index, 1);
+		}
+
+		successes.removeItem = true;
 	}
 
 	return successes;
@@ -204,7 +244,7 @@ export async function cli(args){
 	if(options.noOptions) {
 		showTasks(data, listNames);
 	} else {
-		options = await promptForMissingOptions(options, listNames);
+		options = await promptForMissingOptions(options, listNames, data);
 
 	    let successes = handleAnswers(options, data);
 	    showSuccesses(successes, options);
