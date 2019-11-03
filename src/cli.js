@@ -52,7 +52,7 @@ async function promptForMissingOptions(options, lists) {
 		// Get the list to add it to
 		questions.push({
 			type: 'list',
-			name:'treeForNewItem',
+			name:'listForNewItem',
 			message: 'Pick a list for this item',
 			default: 'Master',
 			choices: lists
@@ -91,10 +91,24 @@ async function promptForMissingOptions(options, lists) {
 		...options,
 		clear: answers.clear,
 		newItem: answers.newItem,
-		treeForNewItem: answers.treeForNewItem,
+		listForNewItem: answers.listForNewItem,
 		newListName: answers.newListName,
 		listsToDelete: answers.listsToDelete
 	};
+}
+
+function handleAnswers(answers, data) {
+	let successes = {};
+	if(answers.clear) {
+
+	}
+
+	if(answers.addItem) {
+		data[answers.listForNewItem].items.push(answers.newItem);
+
+	}
+
+	return successes;
 }
 
 export async function cli(args){
@@ -103,9 +117,9 @@ export async function cli(args){
     let listNames = [] // Holds all of the users list names
     let data = {}; // Hold the data from the file
 
-    if(fs.existsSync('../public/lists.json')){ // Check if the file exists
+    if(fs.existsSync('./public/lists.json')){ // Check if the file exists
 
-    	data = fs.readFileSync('../public/lists.json'); // Read the lists from the file
+    	data = fs.readFileSync('./public/lists.json'); // Read the lists from the file
 
     	data = JSON.parse(data); // Parse from bytecode to JSON
 
@@ -115,11 +129,18 @@ export async function cli(args){
     }
     else {// If it doesn't exist
     	listNames = ["Master"]; // Initialize an empty Master list
+    	data = {
+    		"Master": {
+    			"items": []
+    		}
+    	}
 	}
 
     options = await promptForMissingOptions(options, listNames);
     console.log(options);
 
-    fs.writeFileSync('../public/lists.json', data); // Replace file with newest data
+    let successes = handleAnswers(options, data);
+
+    fs.writeFileSync('./public/lists.json', JSON.stringify(data)); // Replace file with newest data
 }
 
