@@ -4,7 +4,8 @@ Terms-ToDo is a terminal-based to-do list written in nodejs and distributed usin
 ## Usage
 	terms-todo [options]
 When no options are passed, it lists all task lists and tasks
-Options:
+Options:   
+
 	-a, --add: Add a new task
 	-n, --new: Create a new tasklist
 	-c, --clear: Clear selected tasklists

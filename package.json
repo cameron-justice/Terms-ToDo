@@ -1,6 +1,6 @@
 {
   "name": "terms-todo",
-  "version": "1.0.2",
+  "version": "1.0.4",
   "description": "A terminal-based To-Do list",
   "main": "src/index.js",
   "bin": {
